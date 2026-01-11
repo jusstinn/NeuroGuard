@@ -1,6 +1,6 @@
 # The Authority Bias Benchmark: Measuring LLM Susceptibility to Expert Impersonation Attacks
 
-**Authors:** Justin Stoica  
+**Authors:** Justin Stoica, David Ghiberdic, Vladimir Necula  
 **Affiliation:** NeuroGuard AI Safety Research  
 **Date:** January 2026  
 **Keywords:** AI Safety, Large Language Models, Authority Bias, Adversarial Attacks, Benchmark

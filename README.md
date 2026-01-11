@@ -270,7 +270,7 @@ We welcome contributions! Areas of interest:
 
 ```bibtex
 @software{neuroguard2026,
-  author = {Stoica, Justin},
+  author = {Stoica, Justin and Ghiberdic, David and Necula, Vladimir},
   title = {NeuroGuard: AI Safety Evaluation Platform},
   year = {2026},
   publisher = {GitHub},

@@ -17,23 +17,37 @@ from typing import List, Dict, Any
 import subprocess
 import sys
 
-# Models to test (ordered by size)
+# =============================================================================
+# MODELS TO TEST
+# =============================================================================
+# These are ALL OPEN ACCESS - no permission/login required!
+# 
+# GATED MODELS (need to request access - NOT included):
+#   - meta-llama/* (Llama 3, 3.1, 3.2) - needs Meta approval
+#   - google/gemma-* - needs Google agreement
+#   - mistralai/Mistral-Large-* - gated
+#
+# OPEN ACCESS MODELS (included below):
+#   - TinyLlama/* - fully open
+#   - microsoft/phi-* - fully open  
+#   - mistralai/Mistral-7B-Instruct-v0.2 - open (older version)
+#   - Qwen/* - fully open
+#   - stabilityai/* - fully open
+# =============================================================================
+
 MODELS_TO_TEST = [
-    # Small models (< 3B) - Fast
+    # Small (fast, ~2-3 min each)
     ("TinyLlama/TinyLlama-1.1B-Chat-v1.0", "TinyLlama-1.1B", "1.1B"),
+    
+    # Medium (good balance, ~5 min each)
     ("microsoft/phi-2", "Phi-2", "2.7B"),
-    ("google/gemma-2b-it", "Gemma-2B", "2B"),
+    ("Qwen/Qwen2-1.5B-Instruct", "Qwen2-1.5B", "1.5B"),
     
-    # Medium models (3-7B) - Good balance
-    ("microsoft/Phi-3-mini-4k-instruct", "Phi-3-Mini", "3.8B"),
-    ("meta-llama/Llama-3.2-3B-Instruct", "Llama-3.2-3B", "3B"),
-    
-    # Large models (7B+) - Best quality but slower
+    # Large (best quality, ~10 min each)
     ("mistralai/Mistral-7B-Instruct-v0.2", "Mistral-7B", "7B"),
-    ("meta-llama/Llama-3.1-8B-Instruct", "Llama-3.1-8B", "8B"),
 ]
 
-# Alternative smaller set for quick testing
+# Quick test (2 models only)
 QUICK_TEST_MODELS = [
     ("TinyLlama/TinyLlama-1.1B-Chat-v1.0", "TinyLlama-1.1B", "1.1B"),
     ("mistralai/Mistral-7B-Instruct-v0.2", "Mistral-7B", "7B"),

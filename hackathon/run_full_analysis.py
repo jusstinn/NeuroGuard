@@ -126,12 +126,12 @@ def create_visualizations(results_df: pd.DataFrame, output_dir: str):
         print("No valid results to visualize!")
         return
     
-    # 1. Main comparison bar chart
-    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+    # 1. Main comparison chart (3 panels)
+    fig, axes = plt.subplots(1, 3, figsize=(16, 5))
     fig.suptitle('Authority Bias Benchmark - Model Comparison', fontsize=16, fontweight='bold')
     
     # 1a. Capitulation Rate by Model
-    ax1 = axes[0, 0]
+    ax1 = axes[0]
     bars = ax1.bar(valid_df['model_name'], valid_df['capitulation_rate'] * 100, 
                    color=sns.color_palette("RdYlGn_r", len(valid_df)))
     ax1.set_ylabel('Capitulation Rate (%)')
@@ -143,7 +143,7 @@ def create_visualizations(results_df: pd.DataFrame, output_dir: str):
                 f'{val*100:.1f}%', ha='center', va='bottom', fontsize=9)
     
     # 1b. Control Accuracy vs Capitulation (scatter)
-    ax2 = axes[0, 1]
+    ax2 = axes[1]
     scatter = ax2.scatter(valid_df['control_accuracy'] * 100, 
                          valid_df['capitulation_rate'] * 100,
                          s=150, c=range(len(valid_df)), cmap='viridis', alpha=0.7)
@@ -158,7 +158,7 @@ def create_visualizations(results_df: pd.DataFrame, output_dir: str):
     ax2.axvline(x=50, color='red', linestyle='--', alpha=0.3)
     
     # 1c. Robustness Score
-    ax3 = axes[1, 0]
+    ax3 = axes[2]
     colors = ['green' if x >= 0.7 else 'orange' if x >= 0.4 else 'red' 
               for x in valid_df['robustness_score']]
     bars = ax3.barh(valid_df['model_name'], valid_df['robustness_score'] * 100, color=colors)
@@ -169,24 +169,6 @@ def create_visualizations(results_df: pd.DataFrame, output_dir: str):
     for bar, val in zip(bars, valid_df['robustness_score']):
         ax3.text(bar.get_width() + 1, bar.get_y() + bar.get_height()/2,
                 f'{val*100:.1f}%', va='center', fontsize=9)
-    
-    # 1d. Risk Level Distribution
-    ax4 = axes[1, 1]
-    def get_risk(cap_rate):
-        if cap_rate <= 0.2: return 'LOW'
-        elif cap_rate <= 0.4: return 'MEDIUM'
-        elif cap_rate <= 0.6: return 'HIGH'
-        else: return 'CRITICAL'
-    
-    valid_df['risk_level'] = valid_df['capitulation_rate'].apply(get_risk)
-    risk_counts = valid_df['risk_level'].value_counts()
-    risk_order = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
-    risk_colors = {'LOW': 'green', 'MEDIUM': 'yellow', 'HIGH': 'orange', 'CRITICAL': 'red'}
-    
-    risk_data = [risk_counts.get(r, 0) for r in risk_order]
-    ax4.pie(risk_data, labels=risk_order, autopct=lambda p: f'{p:.0f}%' if p > 0 else '',
-            colors=[risk_colors[r] for r in risk_order], startangle=90)
-    ax4.set_title('Risk Level Distribution')
     
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, 'model_comparison.png'), dpi=150, bbox_inches='tight')

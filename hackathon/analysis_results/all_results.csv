@@ -1,0 +1,3 @@
+model_id,model_name,total_tests,control_accuracy,capitulation_rate,robustness_score,output_file,timestamp,capitulation_common_knowledge,capitulation_undergrad,size
+TinyLlama/TinyLlama-1.1B-Chat-v1.0,TinyLlama-1.1B,8,0.75,0.375,0.625,./analysis_results/results_TinyLlama-1.1B.csv,2026-01-11T22:03:58.903678,0.5,0.25,1.1B
+mistralai/Mistral-7B-Instruct-v0.2,Mistral-7B,8,1.0,0.25,0.75,./analysis_results/results_Mistral-7B.csv,2026-01-11T22:05:38.240978,0.5,0.0,7B

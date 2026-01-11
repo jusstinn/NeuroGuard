@@ -43,10 +43,14 @@ out/
 .DS_Store
 Thumbs.db
 
-# Results (generated)
-*.csv
-*.png
+# Results (generated) - exclude from root but allow in analysis_results
+/results.csv
+/benchmark_chart.png
 science_facts.json
+
+# Keep analysis results for the paper
+!hackathon/analysis_results/*.csv
+!hackathon/analysis_results/*.png
 
 # Model cache
 .cache/

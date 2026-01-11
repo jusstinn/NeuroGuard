@@ -393,9 +393,11 @@ class AuthorityBiasBenchmark:
         model: ModelInterface,
         judge: Optional[Any] = None,
         facts_file: Optional[str] = None,
+        control_only: bool = False,
     ):
         self.model = model
         self.judge = judge or HeuristicJudge()
+        self.control_only = control_only
         
         if facts_file and os.path.exists(facts_file):
             self.facts = self._load_facts(facts_file)
@@ -504,8 +506,10 @@ Now, please tell me: What is the {fact.topic.lower()}?"""
         """Run the full benchmark."""
         self.results = []
         
+        benchmark_type = "CONTROL ONLY" if self.control_only else "AUTHORITY BIAS"
+        
         if verbose:
-            print(f"\n[AUTHORITY BIAS BENCHMARK]")
+            print(f"\n[{benchmark_type} BENCHMARK]")
             print(f"   Model: {self.model.name}")
             print(f"   Facts: {len(self.facts)}")
             print("=" * 50)
@@ -515,13 +519,17 @@ Now, please tell me: What is the {fact.topic.lower()}?"""
         for i, fact in iterator:
             persona = self._get_persona(i)
             
-            # Control turn
+            # Control turn (always run)
             control_response = self._run_control_turn(fact)
             control_correct = self.judge.judge_control(control_response, fact)
             
-            # Adversarial turn
-            adversarial_response = self._run_adversarial_turn(fact, persona)
-            capitulated = self.judge.judge_adversarial(adversarial_response, fact)
+            # Adversarial turn (skip if control_only)
+            if self.control_only:
+                adversarial_response = ""
+                capitulated = False
+            else:
+                adversarial_response = self._run_adversarial_turn(fact, persona)
+                capitulated = self.judge.judge_adversarial(adversarial_response, fact)
             
             result = TestResult(
                 topic=fact.topic,
@@ -531,13 +539,16 @@ Now, please tell me: What is the {fact.topic.lower()}?"""
                 control_correct=control_correct,
                 adversarial_response=adversarial_response,
                 capitulated=capitulated,
-                authority_persona=persona["name"],
+                authority_persona=persona["name"] if not self.control_only else "N/A",
             )
             
             self.results.append(result)
             
             if verbose:
-                status = "X FAIL" if capitulated else "V PASS"
+                if self.control_only:
+                    status = "V CORRECT" if control_correct else "X WRONG"
+                else:
+                    status = "X FAIL" if capitulated else "V PASS"
                 tqdm.write(f"   {fact.topic}: {status}")
         
         return self.results
@@ -644,6 +655,10 @@ def main():
                        help="Path to science facts JSON (uses built-in if not found)")
     parser.add_argument("--output", default="results.csv",
                        help="Output CSV path")
+    parser.add_argument("--benchmark-type", 
+                       choices=["control", "authority"],
+                       default="authority",
+                       help="Benchmark type: 'control' (factual only) or 'authority' (full adversarial)")
     
     args = parser.parse_args()
     
@@ -665,7 +680,8 @@ def main():
     
     # Run benchmark
     facts_file = args.facts if os.path.exists(args.facts) else None
-    benchmark = AuthorityBiasBenchmark(model=model, facts_file=facts_file)
+    control_only = (args.benchmark_type == "control")
+    benchmark = AuthorityBiasBenchmark(model=model, facts_file=facts_file, control_only=control_only)
     benchmark.run()
     benchmark.save_results(args.output)
     benchmark.print_summary()

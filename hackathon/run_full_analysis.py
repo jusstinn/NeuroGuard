@@ -1,10 +1,18 @@
 #!/usr/bin/env python3
 """
-Full Analysis Pipeline for Authority Bias Benchmark
-=====================================================
+Full Analysis Pipeline for NeuroGuard Benchmarks
+=================================================
 Tests multiple models and generates comprehensive visualizations.
 
+Supports two benchmark types:
+1. CONTROL ONLY - Just tests if models know facts correctly (no adversarial)
+2. AUTHORITY BIAS - Full benchmark with adversarial authority pressure tests
+
 Run this on a GPU server for best results!
+
+Usage:
+    python run_full_analysis.py --benchmark control --output-dir ./control_results
+    python run_full_analysis.py --benchmark authority --output-dir ./authority_results
 """
 
 import os
@@ -53,11 +61,25 @@ QUICK_TEST_MODELS = [
     ("mistralai/Mistral-7B-Instruct-v0.2", "Mistral-7B", "7B"),
 ]
 
+# Benchmark types
+BENCHMARK_TYPES = {
+    "control": "Control Only (factual accuracy, no adversarial)",
+    "authority": "Authority Bias (full adversarial benchmark)",
+}
 
-def run_benchmark_for_model(model_id: str, model_name: str, output_dir: str) -> Dict[str, Any]:
-    """Run the benchmark for a single model."""
+
+def run_benchmark_for_model(model_id: str, model_name: str, output_dir: str, benchmark_type: str = "authority") -> Dict[str, Any]:
+    """Run the benchmark for a single model.
+    
+    Args:
+        model_id: HuggingFace model ID
+        model_name: Display name for the model
+        output_dir: Directory to save results
+        benchmark_type: "control" for control-only, "authority" for full adversarial
+    """
     print(f"\n{'='*60}")
     print(f"Testing: {model_name} ({model_id})")
+    print(f"Benchmark: {BENCHMARK_TYPES.get(benchmark_type, benchmark_type)}")
     print(f"{'='*60}")
     
     output_file = os.path.join(output_dir, f"results_{model_name.replace(' ', '_')}.csv")
@@ -67,7 +89,8 @@ def run_benchmark_for_model(model_id: str, model_name: str, output_dir: str) -> 
         sys.executable, "benchmark.py",
         "--model", "hf-local",
         "--hf-model", model_id,
-        "--output", output_file
+        "--output", output_file,
+        "--benchmark-type", benchmark_type
     ]
     
     try:
@@ -83,24 +106,32 @@ def run_benchmark_for_model(model_id: str, model_name: str, output_dir: str) -> 
             
             total = len(df)
             control_correct = df['control_correct'].sum()
-            capitulated = df['capitulated'].sum()
             
             metrics = {
                 "model_id": model_id,
                 "model_name": model_name,
                 "total_tests": total,
                 "control_accuracy": control_correct / total if total > 0 else 0,
-                "capitulation_rate": capitulated / total if total > 0 else 0,
-                "robustness_score": 1 - (capitulated / total) if total > 0 else 0,
+                "benchmark_type": benchmark_type,
                 "output_file": output_file,
                 "timestamp": datetime.now().isoformat(),
             }
             
-            # By difficulty
-            for diff in df['difficulty'].unique():
-                diff_df = df[df['difficulty'] == diff]
-                if len(diff_df) > 0:
-                    metrics[f"capitulation_{diff.lower().replace(' ', '_')}"] = diff_df['capitulated'].mean()
+            # Only add capitulation metrics for authority benchmark
+            if benchmark_type == "authority" and 'capitulated' in df.columns:
+                capitulated = df['capitulated'].sum()
+                metrics["capitulation_rate"] = capitulated / total if total > 0 else 0
+                metrics["robustness_score"] = 1 - (capitulated / total) if total > 0 else 0
+                
+                # By difficulty
+                for diff in df['difficulty'].unique():
+                    diff_df = df[df['difficulty'] == diff]
+                    if len(diff_df) > 0:
+                        metrics[f"capitulation_{diff.lower().replace(' ', '_')}"] = diff_df['capitulated'].mean()
+            else:
+                # For control-only, robustness is just control accuracy
+                metrics["capitulation_rate"] = 0
+                metrics["robustness_score"] = metrics["control_accuracy"]
             
             return metrics
         else:
@@ -362,16 +393,25 @@ def main():
     parser.add_argument("--quick", action="store_true", help="Quick test with fewer models")
     parser.add_argument("--output-dir", default="./analysis_results", help="Output directory")
     parser.add_argument("--models", nargs="+", help="Specific models to test")
+    parser.add_argument("--benchmark-type", choices=["control", "authority"], default="authority",
+                       help="Benchmark type: 'control' (factual only) or 'authority' (full adversarial)")
     
     args = parser.parse_args()
     
-    # Create output directory
-    os.makedirs(args.output_dir, exist_ok=True)
+    # Create output directory with benchmark type suffix if needed
+    output_dir = args.output_dir
+    if args.benchmark_type == "control" and args.output_dir == "./analysis_results":
+        output_dir = "./control_results"
+    
+    os.makedirs(output_dir, exist_ok=True)
+    
+    benchmark_name = BENCHMARK_TYPES.get(args.benchmark_type, args.benchmark_type)
     
     print("="*60)
-    print("AUTHORITY BIAS BENCHMARK - FULL ANALYSIS")
+    print(f"NEUROGUARD BENCHMARK - FULL ANALYSIS")
+    print(f"Benchmark Type: {benchmark_name}")
     print("="*60)
-    print(f"Output directory: {args.output_dir}")
+    print(f"Output directory: {output_dir}")
     
     # Select models
     if args.models:
@@ -389,13 +429,13 @@ def main():
     all_results = []
     
     for model_id, model_name, size in models:
-        result = run_benchmark_for_model(model_id, model_name, args.output_dir)
+        result = run_benchmark_for_model(model_id, model_name, output_dir, args.benchmark_type)
         result['size'] = size
         all_results.append(result)
         
         # Save intermediate results
         pd.DataFrame(all_results).to_csv(
-            os.path.join(args.output_dir, 'all_results.csv'), 
+            os.path.join(output_dir, 'all_results.csv'), 
             index=False
         )
     
@@ -403,25 +443,25 @@ def main():
     results_df = pd.DataFrame(all_results)
     
     # Save final results
-    results_df.to_csv(os.path.join(args.output_dir, 'all_results.csv'), index=False)
-    results_df.to_json(os.path.join(args.output_dir, 'all_results.json'), orient='records', indent=2)
+    results_df.to_csv(os.path.join(output_dir, 'all_results.csv'), index=False)
+    results_df.to_json(os.path.join(output_dir, 'all_results.json'), orient='records', indent=2)
     
     print("\n" + "="*60)
     print("GENERATING VISUALIZATIONS")
     print("="*60)
     
     # Create visualizations
-    create_visualizations(results_df, args.output_dir)
+    create_visualizations(results_df, output_dir)
     
     # Generate report
-    generate_report(results_df, args.output_dir)
+    generate_report(results_df, output_dir)
     
     print("\n" + "="*60)
     print("ANALYSIS COMPLETE!")
     print("="*60)
-    print(f"\nResults saved to: {args.output_dir}/")
+    print(f"\nResults saved to: {output_dir}/")
     print("Files generated:")
-    for f in os.listdir(args.output_dir):
+    for f in os.listdir(output_dir):
         print(f"  - {f}")
 
 

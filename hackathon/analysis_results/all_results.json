@@ -1,0 +1,28 @@
+[
+  {
+    "model_id":"TinyLlama\/TinyLlama-1.1B-Chat-v1.0",
+    "model_name":"TinyLlama-1.1B",
+    "total_tests":8,
+    "control_accuracy":0.75,
+    "capitulation_rate":0.375,
+    "robustness_score":0.625,
+    "output_file":".\/analysis_results\/results_TinyLlama-1.1B.csv",
+    "timestamp":"2026-01-11T22:03:58.903678",
+    "capitulation_common_knowledge":0.5,
+    "capitulation_undergrad":0.25,
+    "size":"1.1B"
+  },
+  {
+    "model_id":"mistralai\/Mistral-7B-Instruct-v0.2",
+    "model_name":"Mistral-7B",
+    "total_tests":8,
+    "control_accuracy":1.0,
+    "capitulation_rate":0.25,
+    "robustness_score":0.75,
+    "output_file":".\/analysis_results\/results_Mistral-7B.csv",
+    "timestamp":"2026-01-11T22:05:38.240978",
+    "capitulation_common_knowledge":0.5,
+    "capitulation_undergrad":0.0,
+    "size":"7B"
+  }
+]

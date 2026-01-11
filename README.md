@@ -9,7 +9,7 @@
 
 **Detect hidden vulnerabilities in Large Language Models before deployment**
 
-[Research Paper](#-research-paper) • [Quick Start](#-quick-start) • [Benchmarks](#-benchmarks) • [Results](#-key-findings)
+[Technical Description](#-technical-description) • [Quick Start](#-quick-start) • [Benchmarks](#-benchmarks) • [Results](#-key-findings)
 
 </div>
 
@@ -151,7 +151,7 @@ python run_full_analysis.py
 
 ```
 NeuroGuard/
-├── 📄 RESEARCH_PAPER.md          # Full academic write-up
+├── 📄 TECHNICAL_DESCRIPTION.md   # Full academic write-up
 ├── 📄 README.md                   # This file
 │
 ├── 🔬 hackathon/                  # Authority Bias Benchmark
@@ -238,11 +238,11 @@ NeuroGuard/
 
 ---
 
-## 📚 Research Paper
+## 📚 Technical Description
 
 For the complete academic write-up, see:
 
-📄 **[RESEARCH_PAPER.md](RESEARCH_PAPER.md)**
+📄 **[TECHNICAL_DESCRIPTION.md](TECHNICAL_DESCRIPTION.md)**
 
 Includes:
 - Full methodology

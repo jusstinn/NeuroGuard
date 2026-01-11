@@ -1,0 +1,18 @@
+# Authority Bias Benchmark - AI Manipulation Hackathon
+# Dependencies
+
+# API Providers (optional)
+openai>=1.6.0
+anthropic>=0.18.0
+
+# Hugging Face (primary - works without paid API keys!)
+huggingface_hub>=0.20.0
+transformers>=4.36.0
+torch>=2.1.0
+accelerate>=0.25.0
+
+# Data & Visualization
+pandas>=2.0.0
+tqdm>=4.65.0
+matplotlib>=3.7.0
+python-dotenv>=1.0.0

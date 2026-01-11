@@ -138,9 +138,11 @@ python test_local.py 1
 python run_full_analysis.py
 
 # Results saved to ./analysis_results/
-# - model_comparison.png
-# - difficulty_heatmap.png  
-# - ANALYSIS_REPORT.md
+# - model_comparison.png    (3-panel: capitulation, scatter, robustness)
+# - difficulty_heatmap.png  (topic vulnerability breakdown)
+# - size_correlation.png    (model size vs susceptibility)
+# - summary_stats.png       (statistical overview)
+# - ANALYSIS_REPORT.md      (full markdown report)
 ```
 
 ---
